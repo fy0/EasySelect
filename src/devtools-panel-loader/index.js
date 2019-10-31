@@ -14,5 +14,4 @@ browser.devtools.panels.create(
 ).then((newPanel) => {
   newPanel.onShown.addListener(handleShown);
   newPanel.onHidden.addListener(handleHidden);
-  console.log(111, newPanel)
 });

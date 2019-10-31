@@ -117,6 +117,7 @@
 </template>
 
 <script>
+import browser from 'webextension-polyfill'
 import ClipboardJS from 'clipboard'
 
 let myQuote = (s) => {
@@ -353,7 +354,6 @@ export default {
         }
       })()`
 
-      console.log(111, cmd)
       await browser.devtools.inspectedWindow.eval(cmd)
     },
     async highlightByCssSelector () {
@@ -366,7 +366,6 @@ export default {
         }
       })()`
 
-      console.log(111, cmd)
       await browser.devtools.inspectedWindow.eval(cmd)
     },
     async highlightCancel () {

@@ -37,6 +37,10 @@ const plugins = [
     from: path.resolve("src/devtools-panel-loader/index.js"),
     to: path.resolve("dist/js/devtools-panel-loader.js")
   }]),
+  CopyWebpackPlugin([{
+    from: path.resolve("node_modules/webextension-polyfill/dist/browser-polyfill.min.js"),
+    to: path.resolve("dist/browser-polyfill.js")
+  }]),
   CopyWebpackPlugin([manifest])
 ]
 
@@ -55,7 +59,7 @@ if (process.env.NODE_ENV === 'production') {
   plugins.push(
     new ZipPlugin({
       path: path.resolve("dist"),
-      filename: 'dist.zip',
+      filename: 'plugin.crx',
     })
   )
 }

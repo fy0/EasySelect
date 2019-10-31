@@ -1,4 +1,5 @@
 // 代码来源：https://github.com/xpl/crx-hotreload/edit/master/hot-reload.js
+const browser = browser || chrome
 
 browser.runtime.getBrowserInfo().then((ret) => {
     if (ret.name !== 'Firefox') {

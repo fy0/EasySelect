@@ -3,10 +3,12 @@
     "name": "Quick Pick",
     "description": "a chrome extension to boost web crawler coding",
     "version": "0.0.1",
-    "options_page": "options.html",
     "devtools_page": "devtools-panel-loader.html",
     "background": {
-        "scripts": ["js/background.js"]
+        "scripts": [
+            "browser-polyfill.js",
+            "js/background.js"
+        ]
     },
     "permissions": [
         "notifications",

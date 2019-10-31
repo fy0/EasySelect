@@ -6,7 +6,7 @@
     "options_page": "options.html",
     "devtools_page": "devtools-panel-loader.html",
     "background": {
-        "scripts": ["hot-reload.js", "js/background.js"]
+        "scripts": ["hot-reload.js", "browser-polyfill.js", "js/background.js"]
     },
     "permissions": [
         "notifications",
