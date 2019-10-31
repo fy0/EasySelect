@@ -59,7 +59,7 @@ if (process.env.NODE_ENV === 'production') {
   plugins.push(
     new ZipPlugin({
       path: path.resolve("dist"),
-      filename: 'plugin.crx',
+      filename: 'dist.zip',
     })
   )
 }

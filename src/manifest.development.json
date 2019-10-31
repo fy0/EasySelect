@@ -19,7 +19,6 @@
             "*://*/*"
         ],
         "css": [
-            "css/content.css"
         ],
         "js": [
             "js/content.js"
