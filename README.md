@@ -32,3 +32,4 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 [详细开发文档](https://mrli2016.github.io/notes/frontend/vue-cli3开发Chrome%20Extension实践.html)
+<!-- mrli123123 -->
