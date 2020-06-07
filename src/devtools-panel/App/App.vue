@@ -2,7 +2,7 @@
   <div style="display: flex; height: 100%">
     <el-card class="box-card" style="overflow-x: none;">
       <div slot="header" class="clearfix">
-        <div>节点选择</div>
+        <div>层级选择</div>
         <el-button
           style="float: right; padding: 3px 0"
           type="text"
@@ -27,13 +27,23 @@
 
     <el-card class="box-card" style="margin-left: 20px">
       <div slot="header" class="clearfix">
-        <div>一些信息</div>
+        <div>元素选择</div>
         <el-button
           style="float: right; padding: 3px 0"
           type="text"
         ></el-button>
       </div>
       <div>
+        <div v-if="curEl">
+          <h4>Class 筛选</h4>
+          <el-checkbox-group v-model="curExpr.classes" v-if="curEl.classList && curEl.classList.length">
+            <el-checkbox v-for="i in curEl.classList" :key="i" :label="i">
+              <span style="font-weight: bold; margin-right: 1em">{{i}}</span>
+            </el-checkbox>
+          </el-checkbox-group>
+          <div v-else>无</div>
+        </div>
+
         <div v-if="curEl">
           <h4>属性筛选</h4>
           <el-checkbox-group v-model="curExpr.attrs" v-if="curEl.attrs && curEl.attrs.length">
@@ -45,17 +55,6 @@
           </el-checkbox-group>
           <div v-else>无</div>
         </div>
-
-        <div v-if="curEl">
-          <h4>Class 筛选</h4>
-          <el-checkbox-group v-model="curExpr.classes" v-if="curEl.classList && curEl.classList.length">
-            <el-checkbox v-for="i in curEl.classList" :key="i" :label="i">
-              <span style="font-weight: bold; margin-right: 1em">{{i}}</span>
-            </el-checkbox>
-          </el-checkbox-group>
-          <div v-else>无</div>
-        </div>
-
       </div>
     </el-card>
 
@@ -70,43 +69,45 @@
       <div class="result">
         <div class="item">
           <!-- <div class="title">CSS Selector</div> -->
-          <h4>CSS Selector</h4>
+          <h4>
+            <template>CSS Selector</template>
+            <el-checkbox style="margin-left: 1rem" v-model="highlightOnCss">高亮</el-checkbox>
+          </h4>
           <div v-if="selectedEl">
             <span>{{resultCssSelector}}</span>
             <el-tag class="matched export" exprname='resultCssSelector'>{{count.cssSelector}} 个匹配</el-tag>
-            <el-button type="small" @click="highlightByCssSelector" style="margin-left: .5rem">高亮</el-button>
-            <el-button type="small" @click="highlightCancel">取消高亮</el-button>
           </div>
         </div>
 
         <div class="item">
           <!-- <div class="title">XPath</div> -->
-          <h4>XPath</h4>
+          <h4>
+            <template>XPath</template>
+            <el-checkbox style="margin-left: 1rem" v-model="highlightOnXpath">高亮</el-checkbox>
+          </h4>
           <div v-if="selectedEl">
             <span>{{resultXPath}}</span>
             <el-tag class="matched export" exprname='resultXPath'>{{count.xpath}} 个匹配</el-tag>
-            <el-button type="small" @click="highlightByXPath" style="margin-left: .5rem">高亮</el-button>
-            <el-button type="small" @click="highlightCancel">取消高亮</el-button>
           </div>
         </div>
 
         <div class="item">
           <!-- <div class="title">CSS Selector</div> -->
-          <h4>导出</h4>
+          <h4>导出(点击复制)</h4>
           <div>
-            <el-row>
-              <el-button class="export" icon="el-icon-document-copy" exprname='resultCssSelector' size="small">获取CSS选择器</el-button>
-              <el-button class="export" icon="el-icon-document-copy" exprname='resultCssSelectorJS' size="small">获取JS语句</el-button>
-              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultCssSelectorPy'>获取Python语句(lxml)</el-button>
-            </el-row>
+            <el-button-group>
+              <el-button class="export" icon="el-icon-document-copy" exprname='resultCssSelector' size="small">CSS</el-button>
+              <el-button class="export" icon="el-icon-document-copy" exprname='resultCssSelectorJS' size="small">JS</el-button>
+              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultCssSelectorPy'>PY(lxml)</el-button>
+            </el-button-group>
           </div>
 
           <div style="margin-top: 1rem">
-            <el-row>
-              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPath'>获取XPath表达式</el-button>
-              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPathJS'>获取JS语句</el-button>
-              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPathPy'>获取Python语句(lxml)</el-button>
-            </el-row>
+            <el-button-group>
+              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPath'>XPath</el-button>
+              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPathJS'>JS</el-button>
+              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPathPy'>PY(lxml)</el-button>
+            </el-button-group>
           </div>
         </div>
 
@@ -119,44 +120,7 @@
 <script>
 import browser from 'webextension-polyfill'
 import ClipboardJS from 'clipboard'
-
-let myQuote = (s) => {
-  let singleFlag = (s.indexOf("'") != -1)
-  let doubleFlag = (s.indexOf('"') != -1)
-
-  if (singleFlag && doubleFlag) {
-    return `'${s.replace(/'/g, "\\'")}'`
-  }
-
-  if (singleFlag) {
-    return `"${s}"`
-  }
-
-  if (doubleFlag) {
-    return `'${s}'`
-  }
-
-  return `'${s}'`
-}
-
-let pythonQuote = (s) => {
-  let singleFlag = (s.indexOf("'") != -1)
-  let doubleFlag = (s.indexOf('"') != -1)
-
-  if (singleFlag && doubleFlag) {
-    return `'''${s}'''`
-  }
-
-  if (singleFlag) {
-    return `"${s}"`
-  }
-
-  if (doubleFlag) {
-    return `'${s}'`
-  }
-
-  return `'${s}'`
-}
+import { jsQuote, pyQuote } from './utils'
 
 export default {
   name: 'app',
@@ -165,6 +129,10 @@ export default {
       curIndex: -1,
       exprIndex: 0,
       selectedEl: null,
+
+      highlightOnCss: false,
+      highlightOnXpath: false,
+
       expr: {
         tag: '',
         attrs: [],
@@ -180,14 +148,14 @@ export default {
   computed: {
     curEl () {
       if (this.curIndex !== -1) {
-        // console.log(111, this.selectedElParents[this.curIndex])
         return this.selectedElParents[this.curIndex][1]
       }
+      return null
     },
     curElClassList () {
       let lst = []
-      for (let i of curEl.classList) {
-        if (i != '_quick_pick_hl') {
+      for (let i of this.curEl.classList) {
+        if (i !== '_ez_select_hl') {
           lst.push(i)
         }
       }
@@ -200,7 +168,7 @@ export default {
         for (let i = 0; i < this.curIndex; i++) {
           if (!expr.parent) {
             expr.parent = {
-              tag: this.selectedElParents[i+1][1].extra.tag,
+              tag: this.selectedElParents[i + 1][1].extra.tag,
               attrs: [],
               classes: [],
               parent: null
@@ -223,16 +191,16 @@ export default {
         let base = `${expr.tag}`
 
         for (let i of expr.classes) {
-          base += `[contains(@class, ${myQuote(i)})]`
+          base += `[contains(@class, ${jsQuote(i)})]`
         }
         for (let i of expr.attrs) {
           // 暂不支持又有单引号又有双引号的xpath生成
-          if ((i[1].indexOf('"') != -1) && (i[1].indexOf("'") != -1)) {
+          if ((i[1].indexOf('"') !== -1) && (i[1].indexOf("'") !== -1)) {
             continue
           }
-          base += `[contains(@${i[0]}, ${myQuote(i[1])})]`
+          base += `[contains(@${i[0]}, ${jsQuote(i[1])})]`
         }
-        index ++
+        index += 1
         if ((index <= this.exprIndex) && expr.parent) {
           base = solve(expr.parent) + '/' + base
         }
@@ -255,13 +223,13 @@ export default {
 
         for (let i of expr.attrs) {
           // 暂不支持有\n或\t的css选择器生成
-          if ((i[1].indexOf('\t') != -1) || (i[1].indexOf("\n") != -1)) {
+          if ((i[1].indexOf('\t') !== -1) || (i[1].indexOf('\n') !== -1)) {
             continue
           }
-          base += `[${i[0]}=${myQuote(i[1])}]`
+          base += `[${i[0]}=${jsQuote(i[1])}]`
         }
 
-        index ++
+        index += 1
         if ((index <= this.exprIndex) && expr.parent) {
           base = solve(expr.parent) + ' > ' + base
         }
@@ -298,13 +266,29 @@ export default {
       return 'document.querySelectorAll(`' + this.resultCssSelector + '`)'
     },
     resultXPathPy () {
-      return `page.xpath(${pythonQuote(this.resultXPath)})`
+      return `page.xpath(${pyQuote(this.resultXPath)})`
     },
     resultCssSelectorPy () {
-      return `page.cssselect(${pythonQuote(this.resultXPath)})`
+      return `page.cssselect(${pyQuote(this.resultXPath)})`
     }
   },
   watch: {
+    // 开启关闭 css 高亮
+    'highlightOnCss': async function (val) {
+      if (val) {
+        this.highlightOnXpath = false
+        await this.highlightByCssSelector()
+        // this.$set('highlightOnXpath', false)
+      } else this.highlightCancel()
+    },
+    // 开启关闭 xpath 高亮
+    'highlightOnXpath': async function (val) {
+      if (val) {
+        this.highlightOnCss = false
+        await this.highlightByXPath()
+        // this.$set('highlightOnCss', false)
+      } else this.highlightCancel()
+    },
     'selectedEl': async function () {
       this.expr.attrs = []
       this.expr.classes = []
@@ -313,7 +297,7 @@ export default {
 
       this.curIndex = 0
       this.exprIndex = 0
-      await this.highlightCancel()
+      await this.refreshHighlight()
     },
     'resultXPath': async function () {
       if (!this.selectedEl) return
@@ -321,26 +305,24 @@ export default {
       let ret = await browser.devtools.inspectedWindow.eval(cmd)
       // let ret = await browser.devtools.inspectedWindow.eval('$x(`' + this.xpath + '`).length')
       this.count.xpath = ret[0]
-
-      await this.highlightCancel()
+      await this.refreshHighlight()
     },
     'resultCssSelector': async function () {
       if (!this.selectedEl) return
       let ret = await browser.devtools.inspectedWindow.eval('document.querySelectorAll(`' + this.resultCssSelector + '`).length')
       this.count.cssSelector = ret[0]
-
-      await this.highlightCancel()
+      await this.refreshHighlight()
     }
   },
   methods: {
     async injectStyle () {
-      let code = `if (!window._quick_pick_hl_flag) {
+      let code = `if (!window._ez_select_hl_flag) {
         let style = document.createElement('style');
         style.type = 'text/css';
         style.rel = 'stylesheet';
-        style.append('._quick_pick_hl { outline: auto cornflowerblue; }');
+        style.append('._ez_select_hl { outline: auto cornflowerblue !important; }');
         document.querySelector('body').appendChild(style);
-        window._quick_pick_hl_flag = true;
+        window._ez_select_hl_flag = true;
       }`
       await browser.devtools.inspectedWindow.eval(code)
     },
@@ -350,7 +332,7 @@ export default {
       let cmd = `(() => {
         let els = ${this.resultXPathJS};
         for (let i of els) {
-          i.classList.add('_quick_pick_hl')
+          i.classList.add('_ez_select_hl')
         }
       })()`
 
@@ -362,7 +344,7 @@ export default {
       let cmd = `(() => {
         let els = ${this.resultCssSelectorJS};
         for (let i of els) {
-          i.classList.add('_quick_pick_hl')
+          i.classList.add('_ez_select_hl')
         }
       })()`
 
@@ -370,16 +352,23 @@ export default {
     },
     async highlightCancel () {
       let cmd = `(() => {
-        let els = document.querySelectorAll('._quick_pick_hl');
+        let els = document.querySelectorAll('._ez_select_hl');
         for (let i of els) {
-          i.classList.remove('_quick_pick_hl')
+          i.classList.remove('_ez_select_hl')
         }
       })()`
       await browser.devtools.inspectedWindow.eval(cmd)
+    },
+
+    /** 重置高亮 */
+    async refreshHighlight () {
+      await this.highlightCancel()
+      if (this.highlightOnCss) this.highlightByCssSelector()
+      if (this.highlightOnXpath) this.highlightByXPath()
     }
   },
   created () {
-    this.$nextTick(function () {
+    this.$nextTick(async function () {
       let handleSelectedElement = () => {
         browser.devtools.inspectedWindow.eval(`
 if ($0) {
@@ -412,14 +401,15 @@ if ($0) {
 
   getElementInfo($0)
 }
-        `)
-          .then((result) => {
-            this.selectedEl = result[0]
-            this.curIndex = this.selectedEl.id
-          });
+        `).then((result) => {
+          this.selectedEl = result[0]
+          this.curIndex = this.selectedEl.id
+          this.refreshHighlight()
+        })
       }
 
       browser.devtools.panels.elements.onSelectionChanged.addListener(handleSelectedElement)
+      await handleSelectedElement()
 
       let clipboard = new ClipboardJS('.export', {
         text: (trigger) => {
@@ -435,7 +425,6 @@ if ($0) {
         // console.info('Trigger:', e.trigger)
         e.clearSelection()
       })
-
     })
   }
 }

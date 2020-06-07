@@ -1,29 +1,29 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CopyWebpackPlugin = require("copy-webpack-plugin");
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 const ZipPlugin = require('zip-webpack-plugin')
-const path = require("path");
+const path = require('path')
 
 // Generate pages object
-const pagesObj = {};
-const chromeName = ["popup", "options", "devtools-panel"];
+const pagesObj = {}
+const chromeName = ['devtools-panel']
 
 chromeName.forEach(name => {
   pagesObj[name] = {
     entry: `src/${name}/index.js`,
-    template: "public/index.html",
+    template: 'public/index.html',
     filename: `${name}.html`
-  };
-});
+  }
+})
 
 // 生成manifest文件
 const manifest =
-  process.env.NODE_ENV === "production" ? {
-    from: path.resolve("src/manifest.production.json"),
-    to: `${path.resolve("dist")}/manifest.json`
+  process.env.NODE_ENV === 'production' ? {
+    from: path.resolve('src/manifest.production.json'),
+    to: `${path.resolve('dist')}/manifest.json`
   } : {
-    from: path.resolve("src/manifest.development.json"),
-    to: `${path.resolve("dist")}/manifest.json`
-  };
+    from: path.resolve('src/manifest.development.json'),
+    to: `${path.resolve('dist')}/manifest.json`
+  }
 
 const plugins = [
   new HtmlWebpackPlugin({
@@ -34,12 +34,17 @@ const plugins = [
   }),
   // devtools-panel-loader
   CopyWebpackPlugin([{
-    from: path.resolve("src/devtools-panel-loader/index.js"),
-    to: path.resolve("dist/js/devtools-panel-loader.js")
+    from: path.resolve('src/devtools-panel-loader/index.js'),
+    to: path.resolve('dist/js/devtools-panel-loader.js')
   }]),
   CopyWebpackPlugin([{
-    from: path.resolve("node_modules/webextension-polyfill/dist/browser-polyfill.min.js"),
-    to: path.resolve("dist/browser-polyfill.js")
+    from: path.resolve('node_modules/webextension-polyfill/dist/browser-polyfill.min.js'),
+    to: path.resolve('dist/browser-polyfill.js')
+  }]),
+  CopyWebpackPlugin([{
+    from: path.resolve('misc/icons/*.png'),
+    to: path.resolve('dist/img/icons/'),
+    flatten: true
   }]),
   CopyWebpackPlugin([manifest])
 ]
@@ -48,8 +53,8 @@ const plugins = [
 if (process.env.NODE_ENV !== 'production') {
   plugins.push(
     CopyWebpackPlugin([{
-      from: path.resolve("src/utils/hot-reload.js"),
-      to: path.resolve("dist")
+      from: path.resolve('src/utils/hot-reload.js'),
+      to: path.resolve('dist')
     }])
   )
 }
@@ -58,8 +63,8 @@ if (process.env.NODE_ENV !== 'production') {
 if (process.env.NODE_ENV === 'production') {
   plugins.push(
     new ZipPlugin({
-      path: path.resolve("dist"),
-      filename: 'dist.zip',
+      path: path.resolve('dist'),
+      filename: 'dist.zip'
     })
   )
 }
@@ -77,7 +82,7 @@ module.exports = {
     output: {
       filename: 'js/[name].js'
     },
-    plugins: plugins,
+    plugins: plugins
   },
   css: {
     extract: {
@@ -85,7 +90,6 @@ module.exports = {
       // chunkFilename: 'css/[name].css'
     }
   },
-
 
   chainWebpack: config => {
     // 处理字体文件名，去除hash值
@@ -109,4 +113,4 @@ module.exports = {
         .use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin)
     }
   }
-};
+}

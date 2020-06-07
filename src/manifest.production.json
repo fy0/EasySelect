@@ -1,8 +1,8 @@
 {
     "manifest_version": 2,
-    "name": "Quick Pick",
-    "description": "a chrome extension to boost web crawler coding",
-    "version": "0.0.1",
+    "name": "Easy Select",
+    "description": "Get css selector / xpath of html element",
+    "version": "1.0.0",
     "devtools_page": "devtools-panel-loader.html",
     "background": {
         "scripts": [
@@ -10,22 +10,14 @@
             "js/background.js"
         ]
     },
-    "permissions": [
-        "notifications",
-        "contextMenus",
-        "<all_urls>"
-    ],
+    "icons": {
+        "16": "img/icons/logo-16.png",
+        "24": "img/icons/logo-24.png",
+        "32": "img/icons/logo-32.png",
+        "48": "img/icons/logo-48.png",
+        "64": "img/icons/logo-64.png",
+        "128": "img/icons/logo-128.png"
+    },
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
-    "content_scripts": [{
-        "matches": [
-            "*://*/*"
-        ],
-        "css": [
-        ],
-        "js": [
-            "js/content.js"
-        ],
-        "run_at": "document_end"
-    }],
     "web_accessible_resources": ["fonts/*"]
 }
