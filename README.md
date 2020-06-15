@@ -4,6 +4,22 @@
 
 一个用于快速生成 CSS 选择器的Chrome扩展。
 
+相比于浏览器自带的“Copy selector”功能，EasySelect可以得到更好的结果。
+
+举例来说，这是浏览器自动生成的：
+
+```
+#TopstoryContent > div > div > div > div:nth-child(41) > div > div > h2 > div > a
+```
+
+这是手写，或者用EasySelect拿到的：
+
+```
+div[itemprop='zhihu:question'] > a
+```
+
+虽然严格来说这两个选择器不等价，但是这就是为什么很少用Copy selector的原因。
+
 这个工具可以让你在每一个这样的场景，省去几十秒到几分钟的时间。
 
 适用于学习前端、自动化测试环境。
@@ -11,7 +27,7 @@
 
 ## 安装
 
-Chrome扩展商店：https://chrome.google.com/webstore/detail/easy-select/emfpfmjldkffpibmfhdfmjdbkphccaom/related?hl=zh-CN
+[Chrome扩展商店](https://chrome.google.com/webstore/detail/easy-select/emfpfmjldkffpibmfhdfmjdbkphccaom/related?hl=zh-CN)
 
 或从release手动安装
 
@@ -56,4 +72,4 @@ npm run analyze # 分析包组件大小
 
 ### 响应号召，出摊摆碗
 
-<img src="http://wx3.sinaimg.cn/large/007474KTgy1fxcni97ntdj30u00u00x2.jpg" width=350 />
+![](misc/sponsor.png)
