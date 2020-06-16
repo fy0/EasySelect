@@ -1,6 +1,6 @@
 // 代码来源：https://github.com/xpl/crx-hotreload/edit/master/hot-reload.js
 // eslint-disable-next-line no-use-before-define
-const browser = browser || chrome
+// const browser = browser || chrome
 
 browser.runtime.getBrowserInfo().then((ret) => {
   if (ret.name !== 'Firefox') {

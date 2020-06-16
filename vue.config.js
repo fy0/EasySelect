@@ -71,6 +71,7 @@ if (process.env.NODE_ENV === 'production') {
 
 module.exports = {
   pages: pagesObj,
+
   // // 生产环境是否生成 sourceMap 文件
   productionSourceMap: false,
 
@@ -84,6 +85,7 @@ module.exports = {
     },
     plugins: plugins
   },
+
   css: {
     extract: {
       filename: 'css/[name].css'
@@ -111,6 +113,15 @@ module.exports = {
       config
         .plugin('webpack-bundle-analyzer')
         .use(require('webpack-bundle-analyzer').BundleAnalyzerPlugin)
+    }
+  },
+
+  pluginOptions: {
+    i18n: {
+      locale: 'en',
+      fallbackLocale: 'en',
+      localeDir: 'locales',
+      enableInSFC: false
     }
   }
 }

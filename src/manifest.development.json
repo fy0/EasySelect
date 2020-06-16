@@ -1,16 +1,20 @@
 {
     "manifest_version": 2,
     "name": "Easy Select",
-    "description": "Get css selector / xpath of html element",
+    "description": "Get css selector / xpath of html element, better than ",
     "version": "1.0.0",
     "devtools_page": "devtools-panel-loader.html",
     "background": {
-        "scripts": ["hot-reload.js", "browser-polyfill.js", "js/background.js"]
+        "scripts": [
+            "browser-polyfill.js",
+            "hot-reload.js",
+            "js/background.js"
+        ]
     },
     "permissions": [
         "<all_urls>"
     ],
-    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
+    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
     "content_scripts": [{
         "matches": [
             "*://*/*"

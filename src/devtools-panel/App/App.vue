@@ -383,6 +383,10 @@ if ($0) {
       }
 
       let classList = [...el.classList.values()]
+      let hlIndex = classList.indexOf('_ez_select_hl')
+      if (hlIndex !== -1) {
+        classList.splice(hlIndex, 1)
+      }
 
       return {
           'id': num++,

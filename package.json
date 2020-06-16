@@ -2,19 +2,21 @@
   "name": "easy-select",
   "version": "1.0.0",
   "private": true,
+  "author": "fy <fy0748@gmail.com>",
   "scripts": {
     "serve": "npm run build-watch",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
+    "analyze": "npm run build --report",
     "build-watch": "vue-cli-service build-watch",
-    "analyze": "npm run build --report"
+    "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'"
   },
-  "author": "fy <fy0748@gmail.com>",
   "dependencies": {
     "clipboard": "^2.0.4",
     "core-js": "^2.6.5",
     "element-ui": "^2.8.2",
-    "vue": "^2.6.10"
+    "vue": "^2.6.10",
+    "vue-i18n": "^8.18.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.7.0",
@@ -31,8 +33,9 @@
     "eslint-plugin-standard": "^4.0.1",
     "eslint-plugin-vue": "^5.0.0",
     "vue-cli-plugin-chrome-ext": "0.0.5",
+    "vue-cli-plugin-i18n": "^1.0.1",
     "vue-template-compiler": "^2.5.21",
-    "webextension-polyfill": "^0.5.0",
+    "webextension-polyfill": "^0.6.0",
     "zip-webpack-plugin": "^3.0.0"
   },
   "eslintConfig": {
