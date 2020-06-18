@@ -2,7 +2,7 @@
 // eslint-disable-next-line no-use-before-define
 // const browser = browser || chrome
 
-browser.runtime.getBrowserInfo().then((ret) => {
+chrome.runtime.getBrowserInfo().then((ret) => {
   if (ret.name !== 'Firefox') {
     const filesInDirectory = dir => new Promise(resolve =>
       dir.createReader().readEntries(entries =>

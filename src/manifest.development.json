@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Easy Select",
-    "description": "Get css selector / xpath of html element, better than ",
+    "description": "Get css selector / xpath of html element",
     "version": "1.0.0",
     "devtools_page": "devtools-panel-loader.html",
     "background": {

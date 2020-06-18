@@ -1,0 +1,15 @@
+{
+  "message": "hello i18n !!",
+  "layerSelect": "Layer select",
+  "parentNodes": "Parent Nodes",
+  "layerLimit": "Layer Limit",
+  "elementSelect": "Element Select",
+  "classFilters": "Class Filters",
+  "attributeFilters": "Attribute Filters",
+  "nothing": "Nothing",
+  "conclusion": "Conclusion",
+  "highlight": "mark",
+  "matchCount": " match(es)",
+  "export": "Export (copy on click)",
+  "copied": "Copied: "
+}

@@ -1,5 +1,6 @@
 import Vue from 'vue'
 import AppComponent from './App/App.vue'
+import i18n from './i18n'
 
 import {
   Tag,
@@ -28,6 +29,7 @@ Vue.prototype.$message = Message
 
 new Vue({
   el: '#app',
+  i18n,
   render: createElement => {
     return createElement(AppComponent)
   }

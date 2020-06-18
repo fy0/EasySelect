@@ -1,0 +1,14 @@
+{
+    "layerSelect": "层级选择",
+    "parentNodes": "上级节点",
+    "layerLimit": "层级限制",
+    "elementSelect": "元素选择",
+    "classFilters": "Class 筛选",
+    "attributeFilters": "属性筛选",
+    "nothing": "无",
+    "conclusion": "结论",
+    "highlight": "高亮",
+    "matchCount": " 个匹配",
+    "export": "导出(点击复制)",
+    "copied": "复制成功: "
+  }

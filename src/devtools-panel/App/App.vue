@@ -1,33 +1,32 @@
 <template>
   <div style="display: flex; height: 100%">
-    <el-card class="box-card" style="overflow-x: none;">
+    <el-card class="box-card" style="overflow-x: none; overflow-y: auto;">
       <div slot="header" class="clearfix">
-        <div>层级选择</div>
+        <div>{{ $t('layerSelect') }}</div>
         <el-button
           style="float: right; padding: 3px 0"
           type="text"
         ></el-button>
       </div>
         <div v-if="selectedEl">
-          <h4>上级节点</h4>
+          <h4>{{ $t('parentNodes') }}</h4>
           <el-button-group>
             <el-button v-for="(i, _) in selectedElParents" :key="_" :type="(i[1].id === curIndex) ? 'primary' : ''" @click="curIndex = i[1].id; if (exprIndex < curIndex) exprIndex = curIndex">{{i[1].extra.tag}}</el-button>
             <!-- <el-button v-for="(i, _) in selectedElParents" :key="_" :class="{primary: i[1].id === curEl.id}">{{i[1]}}</el-button> -->
           </el-button-group>
 
-          <h4>语句层级</h4>
+          <h4>{{ $t('layerLimit') }}</h4>
           <el-button-group>
             <el-button v-for="(i, _) in selectedElParents" :key="_" :type="(i[1].id === exprIndex) ? 'info' : ''" @click="exprIndex = i[1].id">{{i[1].extra.tag}}</el-button>
           </el-button-group>
-
         </div>
       <div>
       </div>
     </el-card>
 
-    <el-card class="box-card" style="margin-left: 20px">
+    <el-card class="box-card" style="margin-left: 20px; overflow-y: auto; overflow-x: auto;">
       <div slot="header" class="clearfix">
-        <div>元素选择</div>
+        <div>{{ $t('elementSelect') }}</div>
         <el-button
           style="float: right; padding: 3px 0"
           type="text"
@@ -35,17 +34,17 @@
       </div>
       <div>
         <div v-if="curEl">
-          <h4>Class 筛选</h4>
+          <h4>{{ $t('classFilters') }}</h4>
           <el-checkbox-group v-model="curExpr.classes" v-if="curEl.classList && curEl.classList.length">
             <el-checkbox v-for="i in curEl.classList" :key="i" :label="i">
               <span style="font-weight: bold; margin-right: 1em">{{i}}</span>
             </el-checkbox>
           </el-checkbox-group>
-          <div v-else>无</div>
+          <div v-else>{{ $t('nothing') }}</div>
         </div>
 
         <div v-if="curEl">
-          <h4>属性筛选</h4>
+          <h4>{{ $t('attributeFilters') }}</h4>
           <el-checkbox-group v-model="curExpr.attrs" v-if="curEl.attrs && curEl.attrs.length">
             <el-checkbox v-for="i in curEl.attrs" :key="i[0]" :label="i">
               <span style="font-weight: bold; margin-right: 1em">{{i[0]}}</span>
@@ -53,14 +52,14 @@
             </el-checkbox>
             <!-- <span :key="i">{{i[0]}} {{i[1]}}</span> -->
           </el-checkbox-group>
-          <div v-else>无</div>
+          <div v-else>{{ $t('nothing') }}</div>
         </div>
       </div>
     </el-card>
 
     <el-card class="box-card" style="margin-left: 20px; overflow-y: auto;">
       <div slot="header" class="clearfix">
-        <div>结论</div>
+        <div>{{ $t('conclusion') }}</div>
         <el-button
           style="float: right; padding: 3px 0"
           type="text"
@@ -71,11 +70,11 @@
           <!-- <div class="title">CSS Selector</div> -->
           <h4>
             <template>CSS Selector</template>
-            <el-checkbox style="margin-left: 1rem" v-model="highlightOnCss">高亮</el-checkbox>
+            <el-checkbox style="margin-left: 1rem" v-model="highlightOnCss">{{ $t('highlight') }}</el-checkbox>
           </h4>
           <div v-if="selectedEl">
             <span>{{resultCssSelector}}</span>
-            <el-tag class="matched export" exprname='resultCssSelector'>{{count.cssSelector}} 个匹配</el-tag>
+            <el-tag class="matched export" exprname='resultCssSelector'>{{count.cssSelector}} {{ $t('matchCount') }}</el-tag>
           </div>
         </div>
 
@@ -83,17 +82,17 @@
           <!-- <div class="title">XPath</div> -->
           <h4>
             <template>XPath</template>
-            <el-checkbox style="margin-left: 1rem" v-model="highlightOnXpath">高亮</el-checkbox>
+            <el-checkbox style="margin-left: 1rem" v-model="highlightOnXpath">{{ $t('highlight') }}</el-checkbox>
           </h4>
           <div v-if="selectedEl">
             <span>{{resultXPath}}</span>
-            <el-tag class="matched export" exprname='resultXPath'>{{count.xpath}} 个匹配</el-tag>
+            <el-tag class="matched export" exprname='resultXPath'>{{count.xpath}} {{ $t('matchCount') }}</el-tag>
           </div>
         </div>
 
         <div class="item">
           <!-- <div class="title">CSS Selector</div> -->
-          <h4>导出(点击复制)</h4>
+          <h4>{{ $t('export') }}</h4>
           <div>
             <el-button-group>
               <el-button class="export" icon="el-icon-document-copy" exprname='resultCssSelector' size="small">CSS</el-button>
@@ -423,7 +422,7 @@ if ($0) {
       })
 
       clipboard.on('success', (e) => {
-        this.$message('复制成功: ' + e.text)
+        this.$message(this.$t('copied') + e.text)
         // console.info('Action:', e.action)
         // console.info('Text:', e.text)
         // console.info('Trigger:', e.trigger)
