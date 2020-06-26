@@ -1,5 +1,6 @@
 <template>
   <div style="display: flex; height: 100%">
+    <!-- first panel -->
     <el-card class="box-card" style="overflow-x: none; overflow-y: auto;">
       <div slot="header" class="clearfix">
         <div>{{ $t('layerSelect') }}</div>
@@ -11,20 +12,21 @@
         <div v-if="selectedEl">
           <h4>{{ $t('parentNodes') }}</h4>
           <el-button-group>
-            <el-button v-for="(i, _) in selectedElParents" :key="_" :type="(i[1].id === curIndex) ? 'primary' : ''" @click="curIndex = i[1].id; if (exprIndex < curIndex) exprIndex = curIndex">{{i[1].extra.tag}}</el-button>
+            <el-button v-for="(i, _) in selectedElParents" size="small" :key="_" :type="(i[1].id === curIndex) ? 'primary' : ''" @click="curIndex = i[1].id; if (exprIndex < curIndex) exprIndex = curIndex">{{i[1].extra.tag}}</el-button>
             <!-- <el-button v-for="(i, _) in selectedElParents" :key="_" :class="{primary: i[1].id === curEl.id}">{{i[1]}}</el-button> -->
           </el-button-group>
 
           <h4>{{ $t('layerLimit') }}</h4>
           <el-button-group>
-            <el-button v-for="(i, _) in selectedElParents" :key="_" :type="(i[1].id === exprIndex) ? 'info' : ''" @click="exprIndex = i[1].id">{{i[1].extra.tag}}</el-button>
+            <el-button v-for="(i, _) in selectedElParents" size="small" :key="_" :type="(i[1].id === exprIndex) ? 'info' : ''" @click="exprIndex = i[1].id">{{i[1].extra.tag}}</el-button>
           </el-button-group>
         </div>
       <div>
       </div>
     </el-card>
 
-    <el-card class="box-card" style="margin-left: 20px; overflow-y: auto; overflow-x: auto;">
+    <!-- second panel -->
+    <el-card class="box-card" style="margin-left: .5rem; white-space: normal; overflow: auto;">
       <div slot="header" class="clearfix">
         <div>{{ $t('elementSelect') }}</div>
         <el-button
@@ -57,9 +59,13 @@
       </div>
     </el-card>
 
-    <el-card class="box-card" style="margin-left: 20px; overflow-y: auto;">
+    <!-- third panel -->
+    <el-card class="box-card" style="margin-left: .5rem; overflow-y: auto;">
       <div slot="header" class="clearfix">
-        <div>{{ $t('conclusion') }}</div>
+        <div>
+          <template>{{ $t('conclusion') }}</template>
+          <div style="float: right">123123</div>
+        </div>
         <el-button
           style="float: right; padding: 3px 0"
           type="text"
@@ -212,27 +218,40 @@ export default {
       let el = this.selectedEl
       if (!el) return
 
-      let index = 0
+      let layer = 0
       let solve = (expr) => {
-        let base = `${expr.tag}`
-
-        for (let i of expr.classes) {
-          base += `.${i}`
+        let sel = {
+          base: `${expr.tag}`,
+          class: '',
+          attrs: '',
+          index: null
         }
 
-        for (let i of expr.attrs) {
+        // 将 class 填入
+        for (let i of expr.classes) {
+          sel.class += `.${i}`
+        }
+
+        // 将属性填入
+        for (const [k, v] of expr.attrs) {
           // 暂不支持有\n或\t的css选择器生成
-          if ((i[1].indexOf('\t') !== -1) || (i[1].indexOf('\n') !== -1)) {
+          if ((v.indexOf('\t') !== -1) || (v.indexOf('\n') !== -1)) {
             continue
           }
-          base += `[${i[0]}=${jsQuote(i[1])}]`
+          if (k === 'id') {
+            sel.base += `#${v}`
+          } else {
+            sel.attrs += `[${k}=${jsQuote(v)}]`
+          }
+          // ext += `[${k}]`
         }
 
-        index += 1
-        if ((index <= this.exprIndex) && expr.parent) {
-          base = solve(expr.parent) + ' > ' + base
+        layer += 1
+        let ret = `${sel.base}${sel.class}${sel.attrs}`
+        if ((layer <= this.exprIndex) && expr.parent) {
+          ret = solve(expr.parent) + ' > ' + ret
         }
-        return base
+        return ret
       }
 
       return solve(this.expr)
@@ -319,7 +338,7 @@ export default {
         let style = document.createElement('style');
         style.type = 'text/css';
         style.rel = 'stylesheet';
-        style.append('._ez_select_hl { outline: auto cornflowerblue !important; }');
+        style.append('._ez_select_hl { outline: auto cornflowerblue !important; background-color: cornflowerblue; }');
         document.querySelector('body').appendChild(style);
         window._ez_select_hl_flag = true;
       }`
@@ -378,7 +397,9 @@ if ($0) {
       let attrs = []
 
       for (let i of el.attributes) {
+        if (i.nodeName !== 'class') {
           attrs.push([i.nodeName, i.value])
+        }
       }
 
       let classList = [...el.classList.values()]
