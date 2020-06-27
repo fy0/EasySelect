@@ -2,6 +2,8 @@
 
 ![](misc/example.png)
 
+![](misc/example2.png)
+
 A chrome extension, let you get **readable & maintainable** css selector from elements.
 
 [中文文档](README_CN.md)
