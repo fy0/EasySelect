@@ -11,6 +11,9 @@ import {
   CheckboxGroup,
   ButtonGroup,
   Row,
+  Dropdown,
+  DropdownMenu,
+  DropdownItem,
   Message
 } from 'element-ui'
 
@@ -23,6 +26,9 @@ Vue.use(ButtonGroup)
 Vue.use(Checkbox)
 Vue.use(CheckboxButton)
 Vue.use(CheckboxGroup)
+Vue.use(Dropdown)
+Vue.use(DropdownMenu)
+Vue.use(DropdownItem)
 Vue.use(Row)
 
 Vue.prototype.$message = Message

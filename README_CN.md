@@ -4,7 +4,7 @@
 
 一个Chrome扩展，让你根据页面元素快速获取**可读可维护**的 CSS 选择器。
 
-相比于浏览器自带的“Copy selector”功能，EasySelect可以得到更好的结果。
+### 为什么不用浏览器自带的 "Copy selector"?
 
 举例来说，这是浏览器自动生成的：
 
@@ -12,22 +12,15 @@
 #TopstoryContent > div > div > div > div:nth-child(41) > div > div > h2 > div > a
 ```
 
-这是手写，或者用EasySelect拿到的：
+这是EasySelect拿到的：
 
 ```
 div[itemprop='zhihu:question'] > a
 ```
 
-虽然严格来说这两个选择器不等价，但是这就是为什么很少用Copy selector的原因。
-
-这个工具可以让你在每一个这样的场景，省去几十秒到几分钟的时间。
-
-适用于学习前端、自动化测试环境。
-
-
 ## 安装
 
-[Chrome扩展商店](https://chrome.google.com/webstore/detail/easy-select/emfpfmjldkffpibmfhdfmjdbkphccaom/related?hl=zh-CN)
+[Chrome扩展商店](https://chrome.google.com/webstore/detail/easy-select/emfpfmjldkffpibmfhdfmjdbkphccaom)
 
 或从release手动安装
 
@@ -72,19 +65,19 @@ npm run analyze # 分析包组件大小
 
 ## 下一版本计划
 
-* i18n 支持（中英）
+* ~~i18n 支持（中英）~~
+
+* ~~为所有面板添加滚动条~~
+
+* ~~优化从id生成的css选择器~~
+
+* ~~高亮时带上背景色~~
+
+* ~~css / xpath 切换选项卡~~
 
 * 支持下标标号的生成，并提供开关
 
-* 为所有面板添加滚动条
-
-* 优化从id生成的css选择器
-
-* 高亮时带上背景色
-
 * 一键生成最优选择器
-
-* css / xpath 切换选项卡
 
 * 基于元素的选项记忆
 

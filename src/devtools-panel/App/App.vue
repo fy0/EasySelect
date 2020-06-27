@@ -56,6 +56,11 @@
           </el-checkbox-group>
           <div v-else>{{ $t('nothing') }}</div>
         </div>
+
+        <!-- <div v-if="curEl">
+          <h4>{{ $t('options') }}</h4>
+          <el-checkbox v-model="curExpr.useNthChild">:nth-child()</el-checkbox>
+        </div> -->
       </div>
     </el-card>
 
@@ -64,7 +69,16 @@
       <div slot="header" class="clearfix">
         <div>
           <template>{{ $t('conclusion') }}</template>
-          <div style="float: right">123123</div>
+          <div style="float: right">
+            <el-dropdown @command="handleCommand">
+              <span class="el-dropdown-link">{{conclusionType}}<i class="el-icon-arrow-down el-icon--right"></i>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="CSS">CSS</el-dropdown-item>
+                <el-dropdown-item command="XPATH">XPATH</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+          </div>
         </div>
         <el-button
           style="float: right; padding: 3px 0"
@@ -75,43 +89,23 @@
         <div class="item">
           <!-- <div class="title">CSS Selector</div> -->
           <h4>
-            <template>CSS Selector</template>
-            <el-checkbox style="margin-left: 1rem" v-model="highlightOnCss">{{ $t('highlight') }}</el-checkbox>
+            <template v-if="conclusionType == 'XPATH'">XPath</template>
+            <template v-else>CSS Selector</template>
+            <el-checkbox style="float: right" v-model="highlightOn">{{ $t('highlight') }}</el-checkbox>
           </h4>
           <div v-if="selectedEl">
-            <span>{{resultCssSelector}}</span>
-            <el-tag class="matched export" exprname='resultCssSelector'>{{count.cssSelector}} {{ $t('matchCount') }}</el-tag>
+            <span>{{rcur.selector}}</span>
+            <el-tag class="matched export" exprname='rcur.selector'>{{count.cssSelector}} {{ $t('matchCount') }}</el-tag>
           </div>
         </div>
 
         <div class="item">
-          <!-- <div class="title">XPath</div> -->
-          <h4>
-            <template>XPath</template>
-            <el-checkbox style="margin-left: 1rem" v-model="highlightOnXpath">{{ $t('highlight') }}</el-checkbox>
-          </h4>
-          <div v-if="selectedEl">
-            <span>{{resultXPath}}</span>
-            <el-tag class="matched export" exprname='resultXPath'>{{count.xpath}} {{ $t('matchCount') }}</el-tag>
-          </div>
-        </div>
-
-        <div class="item">
-          <!-- <div class="title">CSS Selector</div> -->
           <h4>{{ $t('export') }}</h4>
           <div>
             <el-button-group>
-              <el-button class="export" icon="el-icon-document-copy" exprname='resultCssSelector' size="small">CSS</el-button>
-              <el-button class="export" icon="el-icon-document-copy" exprname='resultCssSelectorJS' size="small">JS</el-button>
-              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultCssSelectorPy'>PY(lxml)</el-button>
-            </el-button-group>
-          </div>
-
-          <div style="margin-top: 1rem">
-            <el-button-group>
-              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPath'>XPath</el-button>
-              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPathJS'>JS</el-button>
-              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='resultXPathPy'>PY(lxml)</el-button>
+              <el-button class="export" icon="el-icon-document-copy" exprname='rcur.selector' size="small">{{ conclusionType }}</el-button>
+              <el-button class="export" icon="el-icon-document-copy" exprname='rcur.jsConsoleExpr' size="small">JS</el-button>
+              <el-button class="export" icon="el-icon-document-copy" size="small" exprname='rcur.pyLxmlExpr'>PY(lxml)</el-button>
             </el-button-group>
           </div>
         </div>
@@ -126,6 +120,7 @@
 import browser from 'webextension-polyfill'
 import ClipboardJS from 'clipboard'
 import { jsQuote, pyQuote } from './utils'
+import { computeCssSelector, computeXpath } from './compute'
 
 export default {
   name: 'app',
@@ -135,14 +130,17 @@ export default {
       exprIndex: 0,
       selectedEl: null,
 
-      highlightOnCss: false,
-      highlightOnXpath: false,
+      conclusionType: 'CSS',
+      highlightOn: false,
 
       expr: {
         tag: '',
         attrs: [],
         classes: [],
-        parent: null
+        parent: null,
+        useNthChild: false,
+        parentNodesLength: 0,
+        parentNodesIndex: 0
       },
       count: {
         cssSelector: 0,
@@ -172,11 +170,16 @@ export default {
 
         for (let i = 0; i < this.curIndex; i++) {
           if (!expr.parent) {
+            let elInfo = this.selectedElParents[i + 1][1]
             expr.parent = {
-              tag: this.selectedElParents[i + 1][1].extra.tag,
+              tag: elInfo.extra.tag,
               attrs: [],
               classes: [],
-              parent: null
+              parent: null,
+              useNthChild: false,
+
+              parentNodesLength: elInfo.parentNodesLength,
+              parentNodesIndex: elInfo.parentNodesIndex
             }
           }
           expr = expr.parent
@@ -187,74 +190,27 @@ export default {
       set (value) {
       }
     },
-    resultXPath () {
+    /** result of css */
+    rcss () {
       let el = this.selectedEl
       if (!el) return
-
-      let index = 0
-      let solve = (expr) => {
-        let base = `${expr.tag}`
-
-        for (let i of expr.classes) {
-          base += `[contains(@class, ${jsQuote(i)})]`
-        }
-        for (let i of expr.attrs) {
-          // 暂不支持又有单引号又有双引号的xpath生成
-          if ((i[1].indexOf('"') !== -1) && (i[1].indexOf("'") !== -1)) {
-            continue
-          }
-          base += `[contains(@${i[0]}, ${jsQuote(i[1])})]`
-        }
-        index += 1
-        if ((index <= this.exprIndex) && expr.parent) {
-          base = solve(expr.parent) + '/' + base
-        }
-        return base
-      }
-
-      return '//' + solve(this.expr)
+      return computeCssSelector(this.expr, this.exprIndex)
     },
-    resultCssSelector () {
+    /** result of xpath */
+    rxpath () {
       let el = this.selectedEl
       if (!el) return
-
-      let layer = 0
-      let solve = (expr) => {
-        let sel = {
-          base: `${expr.tag}`,
-          class: '',
-          attrs: '',
-          index: null
-        }
-
-        // 将 class 填入
-        for (let i of expr.classes) {
-          sel.class += `.${i}`
-        }
-
-        // 将属性填入
-        for (const [k, v] of expr.attrs) {
-          // 暂不支持有\n或\t的css选择器生成
-          if ((v.indexOf('\t') !== -1) || (v.indexOf('\n') !== -1)) {
-            continue
-          }
-          if (k === 'id') {
-            sel.base += `#${v}`
-          } else {
-            sel.attrs += `[${k}=${jsQuote(v)}]`
-          }
-          // ext += `[${k}]`
-        }
-
-        layer += 1
-        let ret = `${sel.base}${sel.class}${sel.attrs}`
-        if ((layer <= this.exprIndex) && expr.parent) {
-          ret = solve(expr.parent) + ' > ' + ret
-        }
-        return ret
+      return computeXpath(this.expr, this.exprIndex)
+    },
+    /** result of current */
+    rcur () {
+      if (this.conclusionType === 'CSS') {
+        return this.rcss
       }
-
-      return solve(this.expr)
+      if (this.conclusionType === 'XPATH') {
+        return this.rxpath
+      }
+      return this.rcss
     },
     selectedElParents () {
       let el = this.selectedEl
@@ -266,73 +222,50 @@ export default {
         el = el.parentInfo
       }
       return lst
-    },
-    resultXPathJS () {
-      let cmd = `(function () {
-  let r = document.evaluate(\`${this.resultXPath}\`, document, null, XPathResult.ANY_TYPE, null);
-  let lst = [];
-  let el = null;
-  while (el = r.iterateNext()) {
-    lst.push(el);
-  }
-  return lst;
-})()`
-      return cmd
-      // return '$x(`' + this.resultXPath + '`)'
-    },
-    resultCssSelectorJS () {
-      return 'document.querySelectorAll(`' + this.resultCssSelector + '`)'
-    },
-    resultXPathPy () {
-      return `page.xpath(${pyQuote(this.resultXPath)})`
-    },
-    resultCssSelectorPy () {
-      return `page.cssselect(${pyQuote(this.resultXPath)})`
     }
   },
   watch: {
-    // 开启关闭 css 高亮
-    'highlightOnCss': async function (val) {
+    'highlightOn': async function (val) {
       if (val) {
-        this.highlightOnXpath = false
-        await this.highlightByCssSelector()
-        // this.$set('highlightOnXpath', false)
-      } else this.highlightCancel()
-    },
-    // 开启关闭 xpath 高亮
-    'highlightOnXpath': async function (val) {
-      if (val) {
-        this.highlightOnCss = false
-        await this.highlightByXPath()
-        // this.$set('highlightOnCss', false)
-      } else this.highlightCancel()
+        this.highlightSetup()
+      } else {
+        this.highlightCancel()
+      }
     },
     'selectedEl': async function () {
       this.expr.attrs = []
       this.expr.classes = []
       this.expr.tag = this.selectedEl ? this.selectedEl.extra.tag : '*'
       this.expr.parent = null
+      this.expr.useNthChild = false
+      this.expr.parentNodesLength = this.selectedEl.parentNodesLength
+      this.expr.parentNodesIndex = this.selectedEl.parentNodesIndex
 
       this.curIndex = 0
       this.exprIndex = 0
       await this.refreshHighlight()
     },
-    'resultXPath': async function () {
+    'rxpath': async function () {
       if (!this.selectedEl) return
-      let cmd = `document.evaluate(\`count(${this.resultXPath})\`, document, null, XPathResult.ANY_TYPE, null).numberValue`
+      let cmd = `document.evaluate(\`count(${this.rxpath.selector})\`, document, null, XPathResult.ANY_TYPE, null).numberValue`
       let ret = await browser.devtools.inspectedWindow.eval(cmd)
       // let ret = await browser.devtools.inspectedWindow.eval('$x(`' + this.xpath + '`).length')
       this.count.xpath = ret[0]
       await this.refreshHighlight()
     },
-    'resultCssSelector': async function () {
+    'rcss': async function () {
       if (!this.selectedEl) return
-      let ret = await browser.devtools.inspectedWindow.eval('document.querySelectorAll(`' + this.resultCssSelector + '`).length')
+      let ret = await browser.devtools.inspectedWindow.eval(`${this.rcss.jsConsoleExpr}.length`)
       this.count.cssSelector = ret[0]
       await this.refreshHighlight()
     }
   },
   methods: {
+    handleCommand (command) {
+      this.conclusionType = command
+      this.highlightOn = false
+      this.highlightCancel()
+    },
     async injectStyle () {
       let code = `if (!window._ez_select_hl_flag) {
         let style = document.createElement('style');
@@ -344,23 +277,12 @@ export default {
       }`
       await browser.devtools.inspectedWindow.eval(code)
     },
-    async highlightByXPath () {
+    async highlightSetup () {
       await this.injectStyle()
+      let getElements = `let els = ${this.rcur.jsConsoleExpr};`
 
       let cmd = `(() => {
-        let els = ${this.resultXPathJS};
-        for (let i of els) {
-          i.classList.add('_ez_select_hl')
-        }
-      })()`
-
-      await browser.devtools.inspectedWindow.eval(cmd)
-    },
-    async highlightByCssSelector () {
-      await this.injectStyle()
-
-      let cmd = `(() => {
-        let els = ${this.resultCssSelectorJS};
+        ${getElements}
         for (let i of els) {
           i.classList.add('_ez_select_hl')
         }
@@ -381,8 +303,7 @@ export default {
     /** 重置高亮 */
     async refreshHighlight () {
       await this.highlightCancel()
-      if (this.highlightOnCss) this.highlightByCssSelector()
-      if (this.highlightOnXpath) this.highlightByXPath()
+      if (this.highlightOn) this.highlightSetup()
     }
   },
   created () {
@@ -408,11 +329,23 @@ if ($0) {
         classList.splice(hlIndex, 1)
       }
 
+      let index = 0
+      let parentNodesLength = 0
+      if (el.parentElement) {
+        let pnodes = el.parentElement.childNodes
+        for (; index < pnodes.length; index++) {
+          if (pnodes[index] == el) break
+        }
+        parentNodesLength = pnodes.length
+      }
+
       return {
           'id': num++,
           'parentInfo': getElementInfo(el.parentNode),
           'attrs': attrs,
           'classList': classList,
+          'parentNodesLength': parentNodesLength,
+          'parentNodesIndex': index,
           'extra': {
               'str': el.toString(),
               'tag': el.localName,
@@ -437,8 +370,12 @@ if ($0) {
 
       let clipboard = new ClipboardJS('.export', {
         text: (trigger) => {
-          let exprName = trigger.getAttribute('exprname')
-          return this[exprName]
+          let exprNames = trigger.getAttribute('exprname').split('.')
+          let val = this
+          for (let i of exprNames) {
+            val = val[i]
+          }
+          return val
         }
       })
 
@@ -477,4 +414,14 @@ html {
 body {
   height: 95%;
 }
+
+.el-dropdown-link {
+  cursor: pointer;
+  color: #409EFF;
+}
+
+.el-icon-arrow-down {
+  font-size: 12px;
+}
+
 </style>
