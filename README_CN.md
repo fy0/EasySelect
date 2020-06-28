@@ -4,7 +4,7 @@
 
 ![](misc/example2.png)
 
-一个Chrome扩展，让你根据页面元素快速获取**可读可维护**的 CSS 选择器。
+一个Chrome/Firefox扩展，让你根据页面元素快速获取**可读可维护**的 CSS 选择器。
 
 ### 为什么不用浏览器自带的 "Copy selector"?
 
@@ -23,6 +23,8 @@ div[itemprop='zhihu:question'] > a
 ## 安装
 
 [Chrome扩展商店](https://chrome.google.com/webstore/detail/easy-select/emfpfmjldkffpibmfhdfmjdbkphccaom)
+
+[Firefox附加组件](https://addons.mozilla.org/zh-CN/firefox/addon/easyselect/)
 
 或从release手动安装
 

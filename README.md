@@ -4,7 +4,7 @@
 
 ![](misc/example2.png)
 
-A chrome extension, let you get **readable & maintainable** css selector from elements.
+A chrome/firefox extension, let you get **readable & maintainable** css selector from elements.
 
 [中文文档](README_CN.md)
 
@@ -25,6 +25,8 @@ div[itemprop='zhihu:question'] > a
 ## Install
 
 [Chrome Web Store](https://chrome.google.com/webstore/detail/easy-select/emfpfmjldkffpibmfhdfmjdbkphccaom)
+
+[Firefox Addons](https://addons.mozilla.org/zh-CN/firefox/addon/easyselect/)
 
 ## Usage
 
