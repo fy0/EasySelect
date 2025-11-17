@@ -132,6 +132,7 @@ export default {
 
       conclusionType: 'CSS',
       highlightOn: false,
+      clipboard: null,
 
       expr: {
         tag: '',
@@ -227,19 +228,29 @@ export default {
   watch: {
     'highlightOn': async function (val) {
       if (val) {
-        this.highlightSetup()
+        await this.highlightSetup()
       } else {
-        this.highlightCancel()
+        await this.highlightCancel()
       }
     },
     'selectedEl': async function () {
+      let el = this.selectedEl
       this.expr.attrs = []
       this.expr.classes = []
-      this.expr.tag = this.selectedEl ? this.selectedEl.extra.tag : '*'
+      this.expr.tag = el ? el.extra.tag : '*'
       this.expr.parent = null
       this.expr.useNthChild = false
-      this.expr.parentNodesLength = this.selectedEl.parentNodesLength
-      this.expr.parentNodesIndex = this.selectedEl.parentNodesIndex
+      if (el) {
+        this.expr.parentNodesLength = el.parentNodesLength
+        this.expr.parentNodesIndex = el.parentNodesIndex
+      } else {
+        this.expr.parentNodesLength = 0
+        this.expr.parentNodesIndex = 0
+        this.curIndex = -1
+        this.exprIndex = 0
+        await this.refreshHighlight()
+        return
+      }
 
       this.curIndex = 0
       this.exprIndex = 0
@@ -247,24 +258,38 @@ export default {
     },
     'rxpath': async function () {
       if (!this.selectedEl) return
-      let cmd = `document.evaluate(\`count(${this.rxpath.selector})\`, document, null, XPathResult.ANY_TYPE, null).numberValue`
-      let ret = await browser.devtools.inspectedWindow.eval(cmd)
-      // let ret = await browser.devtools.inspectedWindow.eval('$x(`' + this.xpath + '`).length')
+      let expression = 'count(' + this.rxpath.selector + ')'
+      let cmd = `document.evaluate(${JSON.stringify(expression)}, document, null, XPathResult.ANY_TYPE, null).numberValue`
+      let ret = await this.evalWithHandling(cmd)
+      if (!ret || typeof ret[0] === 'undefined') return
       this.count.xpath = ret[0]
       await this.refreshHighlight()
     },
     'rcss': async function () {
       if (!this.selectedEl) return
-      let ret = await browser.devtools.inspectedWindow.eval(`${this.rcss.jsConsoleExpr}.length`)
+      let cmd = `document.querySelectorAll(${JSON.stringify(this.rcss.selector)}).length`
+      let ret = await this.evalWithHandling(cmd)
+      if (!ret || typeof ret[0] === 'undefined') return
       this.count.cssSelector = ret[0]
       await this.refreshHighlight()
     }
   },
   methods: {
-    handleCommand (command) {
+    async evalWithHandling (code) {
+      try {
+        return await browser.devtools.inspectedWindow.eval(code)
+      } catch (error) {
+        console.error('Eval failed:', error)
+        this.$message.error(this.$t('error'))
+        return null
+      }
+    },
+    async handleCommand (command) {
       this.conclusionType = command
-      this.highlightOn = false
-      this.highlightCancel()
+      if (this.highlightOn) {
+        this.highlightOn = false
+      }
+      await this.highlightCancel()
     },
     async injectStyle () {
       let code = `if (!window._ez_select_hl_flag) {
@@ -275,41 +300,56 @@ export default {
         document.querySelector('body').appendChild(style);
         window._ez_select_hl_flag = true;
       }`
-      await browser.devtools.inspectedWindow.eval(code)
+      await this.evalWithHandling(code)
     },
     async highlightSetup () {
       await this.injectStyle()
-      let getElements = `let els = ${this.rcur.jsConsoleExpr};`
-
-      let cmd = `(() => {
-        ${getElements}
-        for (let i of els) {
-          i.classList.add('_ez_select_hl')
-        }
-      })()`
-
-      await browser.devtools.inspectedWindow.eval(cmd)
+      if (!this.selectedEl) return
+      let cmd = ''
+      if (this.conclusionType === 'XPATH') {
+        cmd = `(() => {
+          const expression = ${JSON.stringify(this.rxpath.selector)};
+          const result = document.evaluate(expression, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+          for (let i = 0; i < result.snapshotLength; i++) {
+            const el = result.snapshotItem(i);
+            if (el) {
+              el.classList.add('_ez_select_hl');
+            }
+          }
+        })()`
+      } else {
+        cmd = `(() => {
+          const selector = ${JSON.stringify(this.rcss.selector)};
+          const els = document.querySelectorAll(selector);
+          for (const el of els) {
+            el.classList.add('_ez_select_hl');
+          }
+        })()`
+      }
+      await this.evalWithHandling(cmd)
     },
     async highlightCancel () {
       let cmd = `(() => {
         let els = document.querySelectorAll('._ez_select_hl');
-        for (let i of els) {
-          i.classList.remove('_ez_select_hl')
+        for (const el of els) {
+          el.classList.remove('_ez_select_hl')
         }
       })()`
-      await browser.devtools.inspectedWindow.eval(cmd)
+      await this.evalWithHandling(cmd)
     },
 
     /** 重置高亮 */
     async refreshHighlight () {
       await this.highlightCancel()
-      if (this.highlightOn) this.highlightSetup()
+      if (this.highlightOn) {
+        await this.highlightSetup()
+      }
     }
   },
   created () {
-    this.$nextTick(async function () {
-      let handleSelectedElement = () => {
-        browser.devtools.inspectedWindow.eval(`
+    this.$nextTick(async () => {
+      let handleSelectedElement = async () => {
+        let result = await this.evalWithHandling(`
 if ($0) {
   let num = 0;
   let getElementInfo = function (el) {
@@ -358,28 +398,38 @@ if ($0) {
 
   getElementInfo($0)
 }
-        `).then((result) => {
-          this.selectedEl = result[0]
-          this.curIndex = this.selectedEl.id
-          this.refreshHighlight()
-        })
+        `)
+        if (!result || typeof result[0] === 'undefined') {
+          this.selectedEl = null
+          this.curIndex = -1
+          await this.highlightCancel()
+          return
+        }
+        this.selectedEl = result[0]
+        this.curIndex = this.selectedEl.id
       }
 
       browser.devtools.panels.elements.onSelectionChanged.addListener(handleSelectedElement)
       await handleSelectedElement()
 
-      let clipboard = new ClipboardJS('.export', {
+      this.clipboard = new ClipboardJS('.export', {
         text: (trigger) => {
-          let exprNames = trigger.getAttribute('exprname').split('.')
+          let exprName = trigger ? trigger.getAttribute('exprname') : ''
+          if (!exprName) return ''
+          let exprNames = exprName.split('.')
           let val = this
           for (let i of exprNames) {
+            if (['__proto__', 'constructor', 'prototype'].includes(i)) {
+              return ''
+            }
+            if (val == null) break
             val = val[i]
           }
-          return val
+          return (val == null) ? '' : String(val)
         }
       })
 
-      clipboard.on('success', (e) => {
+      this.clipboard.on('success', (e) => {
         this.$message(this.$t('copied') + e.text)
         // console.info('Action:', e.action)
         // console.info('Text:', e.text)
@@ -387,6 +437,12 @@ if ($0) {
         e.clearSelection()
       })
     })
+  },
+  beforeDestroy () {
+    if (this.clipboard) {
+      this.clipboard.destroy()
+      this.clipboard = null
+    }
   }
 }
 </script>

@@ -1,4 +1,3 @@
-
 // 备选： ⛏️
 chrome.devtools.panels.elements.createSidebarPane('⚙️ Easy Select', function (sidebar) {
   // sidebar initialization code here

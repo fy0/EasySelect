@@ -11,7 +11,7 @@
         @font-face {
             font-family: "element-icons";
             src: url('${chrome.runtime.getURL('fonts/element-icons.woff')}') format('woff'),
-            url('${chrome.runtime.getURL('fonts/element-icons.ttf ')}') format('truetype'); /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+            url('${chrome.runtime.getURL('fonts/element-icons.ttf')}') format('truetype'); /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
         }
     `
   document.head.appendChild(elementIcons)
