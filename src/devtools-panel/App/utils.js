@@ -1,4 +1,3 @@
-
 export function jsQuote (s) {
   let singleFlag = (s.indexOf("'") !== -1)
   let doubleFlag = (s.indexOf('"') !== -1)

@@ -8,7 +8,7 @@ export default function injectUrl (path) {
     let script = document.createElement('script')
     script.setAttribute('type', 'text/javascript')
     // 获得的地址类似：chrome-extension://ihcokhadfjfchaeagdoclpnjdiokfakg/js/inject.js
-    script.src = window.chrome.extension.getURL(path)
+    script.src = chrome.runtime.getURL(path)
     script.onload = function () {
       // 放在页面不好看，执行完后移除掉
       this.parentNode.removeChild(this)
@@ -17,7 +17,7 @@ export default function injectUrl (path) {
   } else if (/\.css$/.test(path)) {
     // 在网页上加载插件内css文件
     let link = document.createElement('link')
-    link.href = window.chrome.extension.getURL(path)
+    link.href = chrome.runtime.getURL(path)
     link.rel = 'stylesheet'
     document.head.appendChild(link)
   }

@@ -1,8 +1,9 @@
 {
   "name": "easy-select",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
   "author": "fy <fy0748@gmail.com>",
+  "packageManager": "pnpm@9.0.0",
   "scripts": {
     "serve": "npm run build-watch",
     "build": "vue-cli-service build",
@@ -12,31 +13,31 @@
     "i18n:report": "vue-cli-service i18n:report --src './src/**/*.?(js|vue)' --locales './src/locales/**/*.json'"
   },
   "dependencies": {
-    "clipboard": "^2.0.4",
-    "core-js": "^2.6.5",
-    "element-ui": "^2.8.2",
-    "vue": "^2.6.10",
-    "vue-i18n": "^8.18.2"
+    "clipboard": "^2.0.11",
+    "core-js": "^3.39.0",
+    "element-ui": "^2.15.14",
+    "vue": "^2.7.16",
+    "vue-i18n": "^8.28.2"
   },
   "devDependencies": {
-    "@vue/cli-plugin-babel": "^3.7.0",
-    "@vue/cli-plugin-eslint": "^3.7.0",
-    "@vue/cli-service": "^3.7.0",
-    "@vue/eslint-config-standard": "^5.1.2",
-    "babel-eslint": "^10.0.1",
+    "@vue/cli-plugin-babel": "^5.0.8",
+    "@vue/cli-plugin-eslint": "^5.0.8",
+    "@vue/cli-service": "^5.0.8",
+    "@vue/eslint-config-standard": "^8.0.1",
+    "@babel/eslint-parser": "^7.25.9",
     "babel-plugin-component": "^1.1.1",
-    "copy-webpack-plugin": "^4.6.0",
-    "eslint": "^5.16.0",
-    "eslint-plugin-import": "^2.20.2",
+    "copy-webpack-plugin": "^11.0.0",
+    "eslint": "^8.57.1",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^4.2.1",
-    "eslint-plugin-standard": "^4.0.1",
-    "eslint-plugin-vue": "^5.0.0",
+    "eslint-plugin-promise": "^6.6.0",
+    "eslint-plugin-standard": "^5.0.0",
+    "eslint-plugin-vue": "^9.31.0",
     "vue-cli-plugin-chrome-ext": "0.0.5",
-    "vue-cli-plugin-i18n": "^1.0.1",
-    "vue-template-compiler": "^2.5.21",
-    "webextension-polyfill": "^0.6.0",
-    "zip-webpack-plugin": "^3.0.0"
+    "vue-cli-plugin-i18n": "^2.0.2",
+    "vue-template-compiler": "^2.7.16",
+    "webextension-polyfill": "^0.12.0",
+    "zip-webpack-plugin": "^4.0.1"
   },
   "eslintConfig": {
     "root": true,
@@ -49,7 +50,8 @@
     ],
     "rules": {},
     "parserOptions": {
-      "parser": "babel-eslint"
+      "parser": "@babel/eslint-parser",
+      "requireConfigFile": false
     },
     "globals": {
       "browser": true,
@@ -62,6 +64,8 @@
     }
   },
   "browserslist": [
-    "> 50%"
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Edge versions"
   ]
 }

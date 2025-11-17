@@ -1,20 +1,18 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Easy Select",
   "description": "Get readable & maintainable css selector from elements",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "devtools_page": "devtools-panel-loader.html",
   "background": {
-    "scripts": [
-      "browser-polyfill.js",
-      "hot-reload.js",
-      "js/background.js"
-    ]
+    "service_worker": "js/background.js"
   },
-  "permissions": [
+  "host_permissions": [
     "<all_urls>"
   ],
-  "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self';",
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
   "content_scripts": [
     {
       "matches": [
@@ -28,6 +26,9 @@
     }
   ],
   "web_accessible_resources": [
-    "fonts/*"
+    {
+      "resources": ["fonts/*"],
+      "matches": ["<all_urls>"]
+    }
   ]
 }

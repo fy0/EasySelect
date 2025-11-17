@@ -25,6 +25,33 @@ const manifest =
     to: `${path.resolve('dist')}/manifest.json`
   }
 
+const copyPatterns = [
+  {
+    from: path.resolve('src/devtools-panel-loader/index.js'),
+    to: path.resolve('dist/js/devtools-panel-loader.js')
+  },
+  {
+    from: path.resolve('node_modules/webextension-polyfill/dist/browser-polyfill.min.js'),
+    to: path.resolve('dist/browser-polyfill.js')
+  },
+  {
+    from: path.resolve('misc/icons'),
+    to: path.resolve('dist/img/icons'),
+    globOptions: {
+      ignore: ['**/.*']
+    }
+  },
+  manifest
+]
+
+// 开发环境将热加载文件复制到dist文件夹
+if (process.env.NODE_ENV !== 'production') {
+  copyPatterns.push({
+    from: path.resolve('src/utils/hot-reload.js'),
+    to: path.resolve('dist')
+  })
+}
+
 const plugins = [
   new HtmlWebpackPlugin({
     // chunks: ['devtools-panel-loader'],
@@ -32,32 +59,10 @@ const plugins = [
     filename: 'devtools-panel-loader.html',
     template: 'src/devtools-panel-loader/index.html'
   }),
-  // devtools-panel-loader
-  CopyWebpackPlugin([{
-    from: path.resolve('src/devtools-panel-loader/index.js'),
-    to: path.resolve('dist/js/devtools-panel-loader.js')
-  }]),
-  CopyWebpackPlugin([{
-    from: path.resolve('node_modules/webextension-polyfill/dist/browser-polyfill.min.js'),
-    to: path.resolve('dist/browser-polyfill.js')
-  }]),
-  CopyWebpackPlugin([{
-    from: path.resolve('misc/icons/*.png'),
-    to: path.resolve('dist/img/icons/'),
-    flatten: true
-  }]),
-  CopyWebpackPlugin([manifest])
+  new CopyWebpackPlugin({
+    patterns: copyPatterns
+  })
 ]
-
-// 开发环境将热加载文件复制到dist文件夹
-if (process.env.NODE_ENV !== 'production') {
-  plugins.push(
-    CopyWebpackPlugin([{
-      from: path.resolve('src/utils/hot-reload.js'),
-      to: path.resolve('dist')
-    }])
-  )
-}
 
 // 生产环境打包dist为zip
 if (process.env.NODE_ENV === 'production') {
@@ -100,12 +105,11 @@ module.exports = {
     // 清除已有的所有 loader。
     // 如果你不这样做，接下来的 loader 会附加在该规则现有的 loader 之后。
     fontsRule.uses.clear()
-    fontsRule.test(/\.(woff2?|eot|ttf|otf)(\?.*)?$/i)
-      .use('url')
-      .loader('url-loader')
-      .options({
-        limit: 1000,
-        name: 'fonts/[name].[ext]'
+    fontsRule
+      .test(/\.(woff2?|eot|ttf|otf)(\?.*)?$/i)
+      .type('asset/resource')
+      .set('generator', {
+        filename: 'fonts/[name][ext]'
       })
 
     // 查看打包组件大小情况
